@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Heart LED</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* Improve font */
+            background-color: #f4f4f4; /* Light grey background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            margin: 0; /* Remove default margin */
+        }
+		.header, .footer {
+			width: 100%;
+			text-align: center;
+			padding: 15px;
+			position: fixed; /* Make the header and footer fixed to the top and bottom */
+		}
+
+		.header {
+			font-size: 20px;
+/* 			color: #f4901e; */
+			top: 0;
+			/* background-color: #ce0003; */
+			border-bottom: 2px solid #4CAF50;
+		}
+
+		.footer {
+			bottom: 0;
+			background-color: #f8f8f8;
+			border-top: 2px solid #4CAF50;
+		}
+        .container {
+            text-align: center;
+            position: relative; /* For notification positioning */
+        }
+		
+
+
+       #writeValue, button {
+            width: 90%;
+            max-width: 300px;
+            box-sizing: border-box;
+            padding: 14px 20px;
+            margin: 10px 0; /* Adjusted margin */
+            display: block; /* Ensure they appear on a new line */
+            border-radius: 5px; /* Rounded corners */
+            border: 1px solid #ddd; /* Add a border */
+			display: block;
+        }
+		
+		#notification {
+			width: 90%;
+			max-width: 300px;
+			box-sizing: border-box;
+			padding: 14px 20px;
+			margin: 10px 0; /* Adjusted margin */
+			display: block; /* Ensure they appear on a new line */
+			border-radius: 5px; /* Rounded corners */
+			display: block;
+			background-color: #b41dff; /* Red background */
+			color: white; /* White text color */
+			padding: 20px; /* Some padding */
+			opacity: 0; /* Start with an opacity of 0 (invisible) */
+			transition: opacity 0.6s; /* Fade in effect */
+			/* position: absolute; /* Positioned relative to its nearest positioned ancestor */ */
+			z-index: 1; /* Sit on top */
+			top: 60px; /* Positioned below the button */
+/* 			left: 50%; /* Move to the middle */
+			/* transform: translateX(-50%); /* Center it */ */ */
+			border-radius: 5px; /* Rounded corners */
+			box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add some shadow for depth */
+			width: 90%; /* Full width minus padding */
+			max-width: 300px; /* Maximum width */
+		        }
+
+        button {
+            background-color: #4CAF50; /* Green background */
+            color: white; /* White text */
+            cursor: pointer; /* Pointer/hand icon */
+            border: none; /* Remove border */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+			display: block;
+        }
+		#resetAndScan {
+			background-color: #62a6ff;
+		}
+		#helpButton {
+			background-color: #e8a807;
+		}
+        button:hover {
+            background-color: #45a049; /* Darker shade for hover effect */
+        }
+		
+		button:disabled {
+			background-color: #CCCCCC; /* 禁用状态下的灰色背景 */
+			color: #666666; /* 深灰色文字 */
+		}
+
+        @media (max-width: 400px) {
+            #writeValue, button {
+                width: 100%;
+            }
+        }
+		a {
+			color: mediumvioletred;
+			text-decoration: none;
+		}
+		.modal {
+		    display: none; /* Hidden by default */
+		    position: fixed; /* Stay in place */
+		    z-index: 1; /* Sit on top */
+		    left: 0;
+		    top: 0;
+		    width: 100%; /* Full width */
+		    height: 100%; /* Full height */
+		    overflow: auto; /* Enable scroll if needed */
+		    background-color: rgb(0,0,0); /* Fallback color */
+		    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+		}
+		
+		.modal-content {
+		    background-color: #fefefe;
+		    margin: 15% auto; /* 15% from the top and centered */
+		    padding: 20px;
+		    border: 1px solid #888;
+		    width: 80%; /* Could be more or less, depending on screen size */
+		}
+		
+		.close {
+		    color: #aaa;
+		    float: right;
+		    font-size: 28px;
+		    font-weight: bold;
+		}
+		
+		.close:hover,
+		.close:focus {
+		    color: black;
+		    text-decoration: none;
+		    cursor: pointer;
+		}
+		
+		h2, h3 {
+			color: #2F4F4F;
+		}
+		
+		h4 {
+			color: #4986d0;
+			font-size: 20px;
+		}
+		p, li {
+			line-height: 1.6;
+		}
+		.command {
+			background-color: #F0F8FF;
+			padding: 10px;
+			border-left: 3px solid #008B8B;
+		}
+
+    </style>
+</head>
+<body>
+	<div class="header">Heart LED</div>
+    <div class="container">
+        <input id="writeValue" type="text" placeholder="输入命令" />
+        <button id="writeCharacteristic" disabled>确定</button>
+		<button id="resetAndScan">重新扫描</button>
+		<button id="helpButton">使用帮助</button>
+		<div id="helpModal" class="modal">
+		    <div class="modal-content">
+		        <span class="close">&times;</span>
+				    <h2>使用帮助</h2>
+				    <p>此APP与硬件设备配合，控制LED灯的不同模式和亮度，包括呼吸效果、恒定亮度、环境光响应和反向环境光响应。<span style="color:red">所有命令以.结尾</span></p>
+				    <p>使用本APP时提前打开蓝牙，APP应会在10S内自动连接设备，长时间未响应点击“重新扫描”按钮重试。</p>
+				    <h3>主要功能及操作：</h3>
+				    <h4>模式切换：</h4>
+				    <p><strong>命令格式：</strong><code>M:&lt;模式编号&gt;</code></p>
+				    <div class="command">
+				        <p>示例：</p>
+				        <ul>
+				            <li>呼吸模式(人体检测)：<code>M:1.</code></li>
+				            <li>恒定亮度：<code>M:2.</code></li>
+				            <li>环境光响应：<code>M:3.</code></li>
+				            <li>反向环境光响应：<code>M:4.</code></li>
+							<li>测试(呼吸)模式：<code>M:0.</code></li>
+				        </ul>
+				    </div>
+					
+					<h4>呼吸效果调节（仅适用于模式1）：</h4>
+					<p><strong>命令格式：</strong><code>SET1:&lt;上阈值&gt;,&lt;下阈值&gt;,&lt;再上阈值&gt;</code></p>
+					<div class="command">
+					    <p>示例：设置呼吸效果的亮度范围：<code>SET1:105,56,180.</code></p>
+					</div>
+				    
+				    <h4>亮度调节（仅适用于模式2）：</h4>
+				    <p><strong>命令格式：</strong><code>SET2:&lt;亮度值&gt;</code></p>
+				    <div class="command">
+				        <p>示例：设置LED亮度为50：<code>SET2:50.</code></p>
+				    </div>
+				    
+				    
+				    <h4>环境光响应设置（模式3和模式4）：</h4>
+				    <p><strong>命令格式：</strong><code>SETMAP:&lt;最小光照&gt;,&lt;最大光照&gt;,&lt;最低亮度&gt;,&lt;最高亮度&gt;</code></p>
+				    <div class="command">
+				        <p>示例：设置环境光响应参数：<code>SETMAP:400,1023,0,90.</code></p>
+				    </div>
+				    
+				    <h4>重置：</h4>
+				    <p>如果需要重置设备并重新开始扫描，点击"重新扫描"按钮</p>
+
+		    </div>
+		</div>
+       <div id="notification"></div>
+	</div>
+	    <div class="footer">Created by <a href="https://github.com/Lucky-183">Lucky</a></div>
+    <script>
+        var connectedDeviceId = null;
+        var connectedServiceId = null;
+		var scanInterval=null;
+
+		document.addEventListener('plusready',function(){
+			function openbluetooth() {
+			    plus.bluetooth.openBluetoothAdapter({
+			        success: function(e) {
+			            console.log('Bluetooth adapter opened successfully.');
+			            showNotification('蓝牙已开启');
+			        },
+			        fail: function(e) {
+			            console.log('Failed to open Bluetooth adapter.');
+			            showNotification('蓝牙开启失败');
+			        }
+			    });
+			}
+			openbluetooth()
+			startScan();
+		})
+        
+        function startScan() {
+            plus.bluetooth.startBluetoothDevicesDiscovery({
+                success: function(e) {
+                    console.log('Discovery started successfully.');
+                    showNotification('开始扫描设备');
+                    discoverDevices();
+                },
+                fail: function(e) {
+                    console.log('Failed to start discovery.');
+                    showNotification('设备扫描失败');
+                }
+            });
+        }
+        
+        function discoverDevices() {
+            var found = false;
+            scanInterval = setInterval(function() {
+                plus.bluetooth.getBluetoothDevices({
+                    success: function(e) {
+                        e.devices.forEach(function(device) {
+                            if (device.name == "Heart_LED" || device.localName == "Heart_LED") {
+                                console.log('Found Heart_LED:', device);
+								showNotification('已找到设备!');
+                                found = true;
+                                clearInterval(scanInterval); // 停止扫描循环
+                                plus.bluetooth.stopBluetoothDevicesDiscovery({
+                                    success: function(e) {
+                                        console.log('Discovery stopped.');
+                                        connectToDevice(device.deviceId);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                if (!found) {
+                    console.log('Scanning for Heart_LED...');
+                }
+            }, 3000); // 每3秒扫描一次
+        }
+        
+        function connectToDevice(deviceId) {
+            plus.bluetooth.createBLEConnection({
+                deviceId: deviceId,
+                success: function(e) {
+                    console.log('Connection successful.');
+                    connectedDeviceId = deviceId;
+					setTimeout(()=>{
+						getBLEDeviceServices(deviceId);
+					},1500)
+
+                },
+                fail: function(e) {
+                    console.log('Failed to connect to device.');
+					console.log(e)
+                }
+            });
+        }
+        
+        function getBLEDeviceServices(deviceId) {
+            plus.bluetooth.getBLEDeviceServices({
+                deviceId: deviceId,
+                success: function(e) {
+                    console.log('Services:', e.services);
+                    e.services.forEach(function(service) {
+                        if (service.uuid == '0000FFF0-0000-1000-8000-00805F9B34FB') {
+                            connectedServiceId = service.uuid;
+                            setTimeout(()=>{
+								getBLEDeviceCharacteristics(deviceId, service.uuid);
+								},1000)
+							
+                        }
+                    });
+                },
+                fail: function(e) {
+                    console.log('Failed to get services.');
+                }
+            });
+        }
+        
+        function getBLEDeviceCharacteristics(deviceId, serviceId) {
+            plus.bluetooth.getBLEDeviceCharacteristics({
+                deviceId: deviceId,
+                serviceId: serviceId,
+                success: function(e) {
+                    console.log('Characteristics:', e.characteristics);
+                    e.characteristics.forEach(function(characteristic) {
+                        if (characteristic.uuid == '0000FFF6-0000-1000-8000-00805F9B34FB') {
+                            console.log('Found the required characteristic.');
+							showNotification('连接设备成功!');
+                            document.getElementById('writeCharacteristic').disabled = false;
+                        }
+                    });
+                },
+                fail: function(e) {
+                    console.log('Failed to get characteristics.');
+                }
+            });
+        }
+        
+        document.getElementById('writeCharacteristic').addEventListener('click', function() {
+            var value = document.getElementById('writeValue').value;
+            if (!value) {
+                alert('请输入要写入的数据');
+                return;
+            }
+            var buffer = new TextEncoder().encode(value);
+            plus.bluetooth.writeBLECharacteristicValue({
+                deviceId: connectedDeviceId,
+                serviceId: connectedServiceId,
+                characteristicId: '0000FFF6-0000-1000-8000-00805F9B34FB',
+                value: buffer,
+                success: function(e) {
+                    console.log('Write success:', e);
+                    showNotification('数据写入成功');
+                },
+                fail: function(e) {
+                    console.log('Write fail:', e);
+                    showNotification('数据写入失败');
+                }
+            });
+        });
+        function showNotification(message) {
+            var notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.opacity = '1'; // Make visible
+            setTimeout(function() {
+                notification.style.opacity = '0'; // Fade out after delay
+            }, 3000); // After 3 seconds
+        }
+		document.getElementById('resetAndScan').addEventListener('click', function() {
+		    // 断开任何现有的蓝牙连接
+		    if (connectedDeviceId) {
+		        plus.bluetooth.closeBLEConnection({
+		            deviceId: connectedDeviceId,
+		            success: function(e) {
+		                console.log('Connection closed');
+		            },
+		            fail: function(e) {
+		                console.log('Failed to close connection');
+		            }
+		        });
+		    }
+			if (scanInterval){
+				clearInterval(scanInterval)
+			}
+				
+		    // 重置UI元素和变量
+		    document.getElementById('writeCharacteristic').disabled = true; // 禁用写入特征值按钮
+		    connectedDeviceId = null;
+		    connectedServiceId = null;
+		    // 清空通知
+		    // showNotification('重置完成，重新开始扫描...');
+		    // 重新开始扫描设备
+		    startScan();
+		});
+		
+		// 获取模态窗口
+		var modal = document.getElementById("helpModal");
+		
+		// 获取打开模态窗口的按钮
+		var btn = document.getElementById("helpButton");
+		
+		// 获取 <span> 元素，用于关闭模态窗口
+		var span = document.getElementsByClassName("close")[0];
+		
+		// 点击按钮打开模态窗口
+		btn.onclick = function() {
+		    modal.style.display = "block";
+		}
+		
+		// 点击 <span> (x), 关闭模态窗口
+		span.onclick = function() {
+		    modal.style.display = "none";
+		}
+		
+		// 在用户点击模态窗口外部时，关闭它
+		window.onclick = function(event) {
+		    if (event.target == modal) {
+		        modal.style.display = "none";
+		    }
+		}
+
+
+
+    </script>
+</body>
+</html>
