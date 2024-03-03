@@ -11,3 +11,13 @@
 #### 制作细节&实现细节：
 
 参见 [https://oshwhub.com/ghgjkh/beating-heart](https://oshwhub.com/ghgjkh/beating-heart)
+
+#### 过程图片：
+
+![p1](https://github.com/Lucky-183/Heart-LED/blob/master/view/1.jpeg)
+![p2](https://github.com/Lucky-183/Heart-LED/blob/master/view/2.jpeg)
+![p3](https://github.com/Lucky-183/Heart-LED/blob/master/view/3.jpeg)
+![p4](https://github.com/Lucky-183/Heart-LED/blob/master/view/4.jpeg)
+<br>
+APP界面<br>
+![p5](https://github.com/Lucky-183/Heart-LED/blob/master/view/5.jpeg)
